@@ -1,0 +1,15 @@
+services:
+  vector:
+    image: docker.io/timberio/vector:latest-debian
+    network_mode: "host"
+    volumes:
+      ### systemn stuff to moinitor
+      - /var/log:/var/log:ro
+      - /run/log:/run/log:ro
+      - /run/systemd:/run/systemd:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      ### config
+      - ./compose/vector.yml:/etc/vector/vector.yml:ro
+      - ./config/:/var/lib/vector/
+    command: "-c /etc/vector/vector.yml"

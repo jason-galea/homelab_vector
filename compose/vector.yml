@@ -1,0 +1,58 @@
+
+log_schema:
+  source_type_key: ""
+
+sources:
+  journald_src:
+    type: journald
+  docker_src:
+    type: docker_logs
+
+transforms:
+  docker:
+    inputs:
+      - docker_src
+    type:  remap
+    source: |-
+      json_message, err = parse_json(.message)
+      if err == null {
+        .message = json_message
+      }
+
+sinks:
+  vector_systemd:
+    type: http
+    inputs:
+      - journald_src
+    uri: http://docker.galea.lan:8099/api/ingest/01984616-d005-7f43-9ec5-fd613503ca61/json
+    compression: gzip
+    request:
+      headers:
+        X-Crystalline-Token: 0b3e0dbd-715e-4856-97e6-95f568b88727
+    batch:
+      max_bytes: 8388608
+    buffer:
+      type: disk
+      max_size: 536870912
+    encoding:
+      codec: json
+    framing:
+      method: newline_delimited
+  vector_docker:
+    type: http
+    inputs:
+      - docker
+    uri: http://docker.galea.lan:8099/api/ingest/01984617-e9c2-7b91-a912-3efb2dd868e8/json
+    compression: gzip
+    request:
+      headers:
+        X-Crystalline-Token: fd67de16-e03d-4410-a98d-be284f1a5e41
+    batch:
+      max_bytes: 8388608
+    buffer:
+      type: disk
+      max_size: 536870912
+    encoding:
+      codec: json
+    framing:
+      method: newline_delimited
